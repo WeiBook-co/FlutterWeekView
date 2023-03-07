@@ -16,6 +16,8 @@ class FlutterWeekViewEvent extends Comparable<FlutterWeekViewEvent> {
 
   /// The event description.
   final String description;
+  final String? id;
+
 
   /// The event start date & time.
   DateTime start;
@@ -59,6 +61,7 @@ class FlutterWeekViewEvent extends Comparable<FlutterWeekViewEvent> {
     this.padding = const EdgeInsets.all(10),
     this.margin,
     this.onTap,
+    this.id,
     this.onLongPress,
     this.eventTextBuilder,
   })  : start = start.yearMonthDayHourMinute,
