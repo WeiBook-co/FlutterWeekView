@@ -28,6 +28,8 @@ typedef DayBarStyleBuilder = DayBarStyle Function(DateTime date);
 /// Creates a date according to the specified index.
 typedef DateCreator = DateTime Function(int index);
 
+typedef ScrollPositionCallback = void Function(DateTime date);
+
 /// A (scrollable) week view which is able to display events, zoom and un-zoom and more !
 class WeekView
     extends ZoomableHeadersWidget<WeekViewStyle, WeekViewController> {
@@ -45,6 +47,8 @@ class WeekView
 
   /// The day bar style builder.
   final DayBarStyleBuilder dayBarStyleBuilder;
+
+  final ScrollPositionCallback onHorizontalScroll;
 
   /// Creates a new week view instance.
   WeekView({
@@ -69,6 +73,7 @@ class WeekView
     DragAndDropOptions? dragAndDropOptions,
     ResizeEventOptions? resizeEventOptions,
     bool? isRTL,
+    required ScrollPositionCallback onHorizontalScroll,
   }) : this.builder(
           events: events,
           dateCount: dates.length,
@@ -92,10 +97,12 @@ class WeekView
           onBackgroundTappedDown: onBackgroundTappedDown,
           dragAndDropOptions: dragAndDropOptions,
           resizeEventOptions: resizeEventOptions,
+          onHorizontalScroll: onHorizontalScroll,
         );
 
   /// Creates a new week view instance.
   WeekView.builder({
+    Key? key,
     List<FlutterWeekViewEvent>? events,
     int? dateCount,
     required this.dateCreator,
@@ -118,6 +125,7 @@ class WeekView
     BackgroundTapCallback? onBackgroundTappedDown,
     DragAndDropOptions? dragAndDropOptions,
     ResizeEventOptions? resizeEventOptions,
+    required this.onHorizontalScroll,
   })  : events = events ?? [],
         dayViewStyleBuilder =
             dayViewStyleBuilder ?? DefaultBuilders.defaultDayViewStyleBuilder,
@@ -125,6 +133,7 @@ class WeekView
             dayBarStyleBuilder ?? DefaultBuilders.defaultDayBarStyleBuilder,
         dateCount = math.max(dateCount ?? 0, 0),
         super(
+          key: key,
           style: style ?? const WeekViewStyle(),
           hoursColumnStyle: hoursColumnStyle ?? const HoursColumnStyle(),
           controller: controller ?? WeekViewController(),
@@ -143,6 +152,7 @@ class WeekView
           onBackgroundTappedDown: onBackgroundTappedDown,
           dragAndDropOptions: dragAndDropOptions,
           resizeEventOptions: resizeEventOptions,
+          onHorizontalScroll: onHorizontalScroll,
         );
 
   @override
@@ -433,6 +443,7 @@ class _AutoScrollDayBar extends StatefulWidget {
 class _AutoScrollDayBarState extends State<_AutoScrollDayBar> {
   /// The day bar scroll controller.
   late SilentScrollController scrollController;
+  DateTime? _currentDate;
 
   @override
   void initState() {
@@ -489,8 +500,20 @@ class _AutoScrollDayBarState extends State<_AutoScrollDayBar> {
           : widget.weekView.style.dayViewSeparatorWidth);
 
   /// Triggered when this widget is scrolling horizontally.
-  void onScrolledHorizontally() => updateScrollBasedOnAnother(
-      scrollController, widget.stateScrollController);
+  void onScrolledHorizontally() {
+    updateScrollBasedOnAnother(scrollController, widget.stateScrollController);
+    // Obtén la fecha actual de la posición actual
+    final position = scrollController.position.pixels;
+    final currentDateIndex = (position / calculateWidth()).floor();
+    final currentDate = widget.weekView.dateCreator(currentDateIndex);
+
+    // Verifica si la fecha actual ha cambiado
+    if (currentDate != _currentDate) {
+      // Solo imprime la fecha si ha cambiado
+      widget.weekView.onHorizontalScroll(currentDate);
+      _currentDate = currentDate;
+    }
+  }
 
   /// Triggered when the week view is scrolling horizontally.
   void updateScrollPosition() => updateScrollBasedOnAnother(

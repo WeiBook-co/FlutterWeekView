@@ -55,7 +55,7 @@ class _FlutterWeekViewDemoAppBody extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 40),
               child: Text(
                 'Flutter Week View demo',
-                style: Theme.of(context).textTheme.headline4,
+                style: Theme.of(context).textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -71,7 +71,8 @@ class _FlutterWeekViewDemoAppBody extends StatelessWidget {
             const SizedBox(height: 10),
             ElevatedButton(
               child: const Text('Demo dynamic day view'),
-              onPressed: () => Navigator.pushNamed(context, '/dynamic-day-view'),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/dynamic-day-view'),
             ),
             const Expanded(
               child: SizedBox.expand(),
@@ -155,7 +156,14 @@ class _DemoWeekView extends StatelessWidget {
     DateTime date = DateTime(now.year, now.month, now.day);
     return WeekView(
       initialTime: const HourMinute(hour: 7).atDate(DateTime.now()),
-      dates: [date.subtract(const Duration(days: 1)), date, date.add(const Duration(days: 1))],
+      onHorizontalScroll: ((date) {
+        print(date.toIso8601String());
+      }),
+      dates: [
+        date.subtract(const Duration(days: 1)),
+        date,
+        date.add(const Duration(days: 1))
+      ],
       events: [
         FlutterWeekViewEvent(
           title: 'An event 1',
@@ -214,7 +222,8 @@ class _DynamicDayViewState extends State<_DynamicDayView> {
           IconButton(
             onPressed: () {
               setState(() {
-                DateTime start = DateTime(now.year, now.month, now.day, Random().nextInt(24), Random().nextInt(60));
+                DateTime start = DateTime(now.year, now.month, now.day,
+                    Random().nextInt(24), Random().nextInt(60));
                 events.add(FlutterWeekViewEvent(
                   title: 'Event ' + (events.length + 1).toString(),
                   start: start,

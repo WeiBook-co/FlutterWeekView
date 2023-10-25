@@ -9,6 +9,7 @@ import 'package:flutter_week_view/src/styles/resize_event.dart';
 import 'package:flutter_week_view/src/styles/zoomable_header_widget.dart';
 import 'package:flutter_week_view/src/utils/builders.dart';
 import 'package:flutter_week_view/src/utils/hour_minute.dart';
+import 'package:flutter_week_view/src/widgets/week_view.dart';
 
 /// Allows to calculate a top offset from a given hour.
 typedef TopOffsetCalculator = double Function(HourMinute time);
@@ -116,7 +117,7 @@ abstract class ZoomableHeadersWidget<S extends ZoomableHeaderWidgetStyle,
     required this.controller,
     this.hoursColumnTimeBuilder,
     this.hoursColumnBackgroundBuilder,
-    required this.isRTL,
+    required this.isRTL, ScrollPositionCallback? onHorizontalScroll,
   }) : super(key: key);
 }
 
