@@ -223,8 +223,12 @@ class _WeekViewState extends ZoomableHeadersWidgetState<WeekView> {
 
     double leftOffset = (initialTimeDateIndex ?? 0) *
         (dayViewWidth! + widget.style.dayViewSeparatorWidth);
-    horizontalScrollController!.jumpTo(math.min<double>(
-        leftOffset, horizontalScrollController!.position.maxScrollExtent));
+    horizontalScrollController!.jumpTo(
+      horizontalScrollController!.positions.isNotEmpty
+          ? math.min<double>(leftOffset,
+              horizontalScrollController!.position.maxScrollExtent ?? 0)
+          : 0,
+    );
   }
 
   @override
