@@ -217,7 +217,9 @@ class _WeekViewState extends ZoomableHeadersWidgetState<WeekView> {
   void scrollToInitialTime() {
     super.scrollToInitialTime();
 
-    if (horizontalScrollController == null) {
+    if (horizontalScrollController == null ||
+        horizontalScrollController?.positions == null ||
+        horizontalScrollController!.positions.isEmpty) {
       return;
     }
 
