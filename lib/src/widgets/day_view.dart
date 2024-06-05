@@ -31,6 +31,7 @@ class DayView extends ZoomableHeadersWidget<DayViewStyle, DayViewController> {
 
   /// Creates a new day view instance.
   DayView({
+    Key? key,
     List<FlutterWeekViewEvent>? events,
     required DateTime date,
     DayViewStyle? style,
@@ -55,6 +56,7 @@ class DayView extends ZoomableHeadersWidget<DayViewStyle, DayViewController> {
         date = date.yearMonthDay,
         dayBarStyle = dayBarStyle ?? DayBarStyle.fromDate(date: date),
         super(
+          key: key,
           style: style ?? DayViewStyle.fromDate(date: date),
           hoursColumnStyle: hoursColumnStyle ?? const HoursColumnStyle(),
           controller: controller ?? DayViewController(),

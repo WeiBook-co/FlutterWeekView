@@ -6,52 +6,19 @@ import 'package:flutter_week_view/src/widgets/day_view.dart';
 import 'package:flutter_week_view/src/widgets/hours_column.dart';
 import 'package:flutter_week_view/src/widgets/zoomable_header_widget.dart';
 
-/// Allows to style a day view.
 class DayViewStyle extends ZoomableHeaderWidgetStyle {
-  /// An hour row height (with a zoom factor set to 1). Defaults to 60.
   final double hourRowHeight;
-
-  /// The background color for the day view main column.
-  ///
-  /// Defaults to a light blue if the DayView's date is today (make sure to use [DayViewStyle.fromDate]
-  /// if you're creating your own DayViewStyle and want this behaviour). Otherwise, defaults to a
-  /// light gray.
   final Color? backgroundColor;
-
-  /// The rules color, i.e., the color of the background horizontal lines positioned along with
-  /// each hour shown in the hours column.
-  ///
-  /// Defaults to a semi-transparent gray.
   final Color? backgroundRulesColor;
-
-  /// The current time rule color, i.e., the color of the horizontal line in the day view column,
-  /// positioned at the current time of the day. It is only shown if the DayView's date is today.
-  ///
-  /// Defaults to [Colors.pink].
   final Color? currentTimeRuleColor;
-
-  /// The current time rule height.
-  ///
-  /// Defaults to 1 pixel.
   final double currentTimeRuleHeight;
-
-  /// The current time circle color. This is a small circle to be shown along with the horizontal
-  /// time rule in the hours column, typically colored the same as [currentTimeRuleColor].
-  ///
-  /// If null, the circle is not drawn.
   final Color? currentTimeCircleColor;
-
-  /// The current time circle radius.
-  ///
-  /// Defaults to 7.5 pixels.
   final double currentTimeCircleRadius;
-
-  /// The current time rule position, i.e., the position of the current time circle in the day view column.
-  ///
-  /// Defaults to [CurrentTimeCirclePosition.right].
   final CurrentTimeCirclePosition currentTimeCirclePosition;
 
-  /// Creates a new day view style instance.
+  // Nuevos parámetros
+  final List<TimeBlock> timeBlocks;
+
   const DayViewStyle({
     double? headerSize,
     double? hourRowHeight,
@@ -62,6 +29,7 @@ class DayViewStyle extends ZoomableHeaderWidgetStyle {
     this.currentTimeCircleColor,
     double? currentTimeCircleRadius,
     CurrentTimeCirclePosition? currentTimeCirclePosition,
+    this.timeBlocks = const [],
   })  : hourRowHeight = (hourRowHeight ?? 60) < 0 ? 0 : (hourRowHeight ?? 60),
         backgroundColor = backgroundColor ?? const Color(0xFFF2F2F2),
         currentTimeRuleHeight =
@@ -73,7 +41,6 @@ class DayViewStyle extends ZoomableHeaderWidgetStyle {
             currentTimeCirclePosition ?? CurrentTimeCirclePosition.right,
         super(headerSize: headerSize);
 
-  /// Allows to automatically customize the day view background color according to the specified date.
   DayViewStyle.fromDate({
     required DateTime date,
     double? headerSize,
@@ -84,19 +51,20 @@ class DayViewStyle extends ZoomableHeaderWidgetStyle {
     Color? currentTimeCircleColor,
     double? currentTimeCircleRadius,
     CurrentTimeCirclePosition? currentTimeCirclePosition,
+    List<TimeBlock> timeBlocks = const [],
   }) : this(
           headerSize: headerSize,
           hourRowHeight: hourRowHeight,
-          backgroundColor: Utils.sameDay(date) ? const Color(0xFFE3F5FF) : null,
+          backgroundColor: Utils.sameDay(date) ? Colors.white : null,
           backgroundRulesColor: backgroundRulesColor,
           currentTimeRuleColor: currentTimeRuleColor,
           currentTimeRuleHeight: currentTimeRuleHeight,
           currentTimeCircleColor: currentTimeCircleColor,
           currentTimeCircleRadius: currentTimeCircleRadius,
           currentTimeCirclePosition: currentTimeCirclePosition,
+          timeBlocks: timeBlocks,
         );
 
-  /// Allows to copy the current style instance with your own properties.
   DayViewStyle copyWith({
     double? headerSize,
     double? hourRowHeight,
@@ -107,6 +75,7 @@ class DayViewStyle extends ZoomableHeaderWidgetStyle {
     Color? currentTimeCircleColor,
     double? currentTimeCircleRadius,
     CurrentTimeCirclePosition? currentTimeCirclePosition,
+    List<TimeBlock>? timeBlocks,
   }) =>
       DayViewStyle(
         headerSize: headerSize ?? this.headerSize,
@@ -122,9 +91,10 @@ class DayViewStyle extends ZoomableHeaderWidgetStyle {
             currentTimeCircleRadius ?? this.currentTimeCircleRadius,
         currentTimeCirclePosition:
             currentTimeCirclePosition ?? this.currentTimeCirclePosition,
+        timeBlocks: timeBlocks ?? this.timeBlocks,
       );
 
-  /// Creates the background painter.
+  @override
   CustomPainter createBackgroundPainter({
     required DayView dayView,
     required TopOffsetCalculator topOffsetCalculator,
@@ -138,6 +108,18 @@ class DayViewStyle extends ZoomableHeaderWidgetStyle {
       );
 }
 
+class TimeBlock {
+  final HourMinute startTime;
+  final HourMinute endTime;
+  final Color color;
+
+  TimeBlock({
+    required this.startTime,
+    required this.endTime,
+    required this.color,
+  });
+}
+
 /// The current time circle position enum.
 enum CurrentTimeCirclePosition {
   /// Whether it should be placed at the start of the current time rule.
@@ -147,24 +129,13 @@ enum CurrentTimeCirclePosition {
   right,
 }
 
-/// The events column background painter.
 class _EventsColumnBackgroundPainter extends CustomPainter {
-  /// The minimum time to display.
   final HourMinute minimumTime;
-
-  /// The maximum time to display.
   final HourMinute maximumTime;
-
-  /// The top offset calculator.
   final TopOffsetCalculator topOffsetCalculator;
-
-  /// The day view style.
   final DayViewStyle dayViewStyle;
-
-  /// The interval between two lines.
   final Duration interval;
 
-  /// Creates a new events column background painter.
   const _EventsColumnBackgroundPainter({
     required this.minimumTime,
     required this.maximumTime,
@@ -176,8 +147,37 @@ class _EventsColumnBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (dayViewStyle.backgroundColor != null) {
-      canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height),
-          Paint()..color = dayViewStyle.backgroundColor!);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Paint()..color = dayViewStyle.backgroundColor!,
+      );
+    }
+
+    if (dayViewStyle.timeBlocks.isNotEmpty) {
+      for (TimeBlock block in dayViewStyle.timeBlocks) {
+        double startOffset = topOffsetCalculator(block.startTime);
+        double endOffset = topOffsetCalculator(block.endTime);
+
+        // Pintar fondo gris con mayor opacidad
+        canvas.drawRect(
+          Rect.fromLTRB(0, startOffset, size.width, endOffset),
+          Paint()..color = Colors.grey.withOpacity(0.1),
+        );
+
+        // Dibujar divisiones diagonales en una capa separada
+        Paint diagonalPaint = Paint()
+          ..color = Colors.grey
+          ..strokeWidth = 1;
+
+        double xStep = 20.0;
+        for (double x = -size.height; x < size.width; x += xStep) {
+          canvas.drawLine(
+            Offset(x, startOffset),
+            Offset(x + size.height * 0.15, endOffset),
+            diagonalPaint,
+          );
+        }
+      }
     }
 
     if (dayViewStyle.backgroundRulesColor != null) {
@@ -185,19 +185,22 @@ class _EventsColumnBackgroundPainter extends CustomPainter {
           HoursColumn.getSideTimes(minimumTime, maximumTime, interval);
       for (HourMinute time in sideTimes) {
         double topOffset = topOffsetCalculator(time);
-        canvas.drawLine(Offset(0, topOffset), Offset(size.width, topOffset),
-            Paint()..color = dayViewStyle.backgroundRulesColor!);
+        canvas.drawLine(
+          Offset(0, topOffset),
+          Offset(size.width, topOffset),
+          Paint()..color = dayViewStyle.backgroundRulesColor!,
+        );
       }
     }
   }
 
   @override
-  bool shouldRepaint(
-      _EventsColumnBackgroundPainter oldDayViewBackgroundPainter) {
+  bool shouldRepaint(_EventsColumnBackgroundPainter oldDelegate) {
     return dayViewStyle.backgroundColor !=
-            oldDayViewBackgroundPainter.dayViewStyle.backgroundColor ||
+            oldDelegate.dayViewStyle.backgroundColor ||
         dayViewStyle.backgroundRulesColor !=
-            oldDayViewBackgroundPainter.dayViewStyle.backgroundRulesColor ||
-        topOffsetCalculator != oldDayViewBackgroundPainter.topOffsetCalculator;
+            oldDelegate.dayViewStyle.backgroundRulesColor ||
+        topOffsetCalculator != oldDelegate.topOffsetCalculator ||
+        dayViewStyle.timeBlocks != oldDelegate.dayViewStyle.timeBlocks;
   }
 }
