@@ -94,7 +94,6 @@ class DayViewStyle extends ZoomableHeaderWidgetStyle {
         timeBlocks: timeBlocks ?? this.timeBlocks,
       );
 
-  @override
   CustomPainter createBackgroundPainter({
     required DayView dayView,
     required TopOffsetCalculator topOffsetCalculator,
@@ -158,13 +157,11 @@ class _EventsColumnBackgroundPainter extends CustomPainter {
         double startOffset = topOffsetCalculator(block.startTime);
         double endOffset = topOffsetCalculator(block.endTime);
 
-        // Pintar fondo gris con mayor opacidad
         canvas.drawRect(
           Rect.fromLTRB(0, startOffset, size.width, endOffset),
           Paint()..color = Colors.grey.withOpacity(0.1),
         );
 
-        // Dibujar divisiones diagonales en una capa separada
         Paint diagonalPaint = Paint()
           ..color = Colors.grey
           ..strokeWidth = 1;

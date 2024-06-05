@@ -5,7 +5,6 @@ import 'package:flutter/physics.dart';
 
 /// Allows to not show the glow effect in scrollable widgets.
 class NoGlowBehavior extends ScrollBehavior {
-  @override
   Widget buildViewportChrome(
       BuildContext context, Widget child, AxisDirection axisDirection) {
     return child;

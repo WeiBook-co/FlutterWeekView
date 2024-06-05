@@ -52,6 +52,7 @@ class WeekView
 
   /// Creates a new week view instance.
   WeekView({
+    Key? key,
     List<FlutterWeekViewEvent>? events,
     required List<DateTime> dates,
     DayViewStyleBuilder? dayViewStyleBuilder,
@@ -227,8 +228,8 @@ class _WeekViewState extends ZoomableHeadersWidgetState<WeekView> {
         (dayViewWidth! + widget.style.dayViewSeparatorWidth);
     horizontalScrollController!.jumpTo(
       horizontalScrollController!.positions.isNotEmpty
-          ? math.min<double>(leftOffset,
-              horizontalScrollController!.position.maxScrollExtent ?? 0)
+          ? math.min<double>(
+              leftOffset, horizontalScrollController!.position.maxScrollExtent)
           : 0,
     );
   }
