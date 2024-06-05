@@ -163,7 +163,7 @@ class _EventsColumnBackgroundPainter extends CustomPainter {
         );
 
         Paint diagonalPaint = Paint()
-          ..color = Colors.grey
+          ..color = Colors.grey.withOpacity(0.6)
           ..strokeWidth = 1;
 
         double xStep = 20.0;
